@@ -87,9 +87,11 @@
     </div>
 
     <!-- Ссылки на скрипты -->
-     <script src="js/core/GameState.js"></script>
-    <script src="js/ui/UIManager.js"></script>
-
+    <script src="js/core/GameState.js"></script> 
+    <script src="js/core/Item.js"></script>      <!-- НОВОЕ: сначала Item (базовый класс) -->
+    <script src="js/core/Hero.js"></script>
+    <script src="js/core/Shop.js"></script>      <!-- НОВОЕ: потом Shop (использует Item) -->
+    <script src="js/ui/UIManager.js"></script> 
     <script src="js/game.js"></script>
 </body>
 </html>
