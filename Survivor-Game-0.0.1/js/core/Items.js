@@ -25,9 +25,18 @@ class Item {
      * Получить цену предмета (может быть переопределена)
      * @returns {number} - Цена в провизии
      */
+    /////// <0.0.3|1>
     getPrice() {
-        return this.basePrice;
+        const rarityMultiplier = {
+            common: 1,
+            rare: 1.5,
+            epic: 2,
+            legendary: 3
+        };
+
+        return Math.floor(this.basePrice * (rarityMultiplier[this.rarity] || 1));
     }
+    /////// </0.0.3|1>
 }
 
 // ==============================

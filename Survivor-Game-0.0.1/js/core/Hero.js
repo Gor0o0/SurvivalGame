@@ -22,6 +22,10 @@ class Hero {
         // Навыки и очки навыков (каждые 3 уровня)
         this.skills = [];
         this.skillPoints = 0;
+
+        /////// <0.0.2|3>
+        this.isUnlocked = true;
+        /////// </0.0.2|3>
     }
 
     addExp(amount) {
