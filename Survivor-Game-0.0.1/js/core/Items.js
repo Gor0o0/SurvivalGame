@@ -61,6 +61,26 @@ class Weapon extends Item {
     }
 }
 // ==============================
+// Класс брони
+// ==============================
+class Armor extends Item {
+    /**
+     * Создаёт новую броню
+     * @param {string} id - Уникальный идентификатор
+     * @param {string} name - Название
+     * @param {string} rarity - Редкость
+     * @param {number} basePrice - Цена
+     * @param {Object} stats - Характеристики {defense, bonusHp}
+     * @param {string} icon - Иконка
+     */
+    constructor(id, name, rarity, basePrice, stats, icon = '🛡️') {
+        super(id, name, 'armor', rarity, basePrice, icon);
+        this.defense = stats.defense || 0;
+        this.bonusHp = stats.bonusHp || 0;
+        this.description = `Защита: ${this.defense}, HP: +${this.bonusHp}`;
+    }
+}
+// ==============================
 // Класс расходника
 // ==============================
 class Consumable extends Item {
