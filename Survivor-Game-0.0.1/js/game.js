@@ -55,11 +55,21 @@ document.querySelectorAll('.start-match-btn').forEach(btn => {
         
         window.GameState.updateResource(costType, -1);
         
-        // +++ НОВОЕ: даем немного опыта за матч
+        // Даем опыт за матч (увеличили до 15)
         const currentHero = window.GameState.getCurrentHero();
-        currentHero.addExp(10);
+        currentHero.addExp(15);
         
-        alert(`Матч начат с героем ${currentHero.name}! Потрачен 1 ${costType}. Получено 10 опыта.`);
+        // +++ НОВОЕ: добавляем награды (материалы и возможные рецепты)
+        const rewards = window.GameState.addBattleRewards();
+        
+        let message = `Матч завершен! Герой ${currentHero.name} получил 15 опыта.\n`;
+        message += `Получены материалы: ${rewards.materials.map(m => m.amount > 0 ? `${m.type.replace('material_', '')}: ${m.amount}` : '').filter(Boolean).join(', ')}`;
+        
+        if (rewards.newRecipe) {
+            message += `\n🔓 Открыт новый рецепт: ${rewards.newRecipe.name}!`;
+        }
+        
+        alert(message);
     });
 });
 
@@ -81,7 +91,12 @@ window.GameState.selectHero('1');
 
 // +++ НОВОЕ: инициализируем магазин
 window.GameState.initShop();
+// Инициализируем магазин
+window.GameState.initShop();
+
+// +++ НОВОЕ: инициализируем систему крафта
+window.GameState.initRecipes();
 // +++ НОВОЕ: Автоматически выбираем первого героя
 window.GameState.selectHero('1');
 
-console.log('Игра запущена! Магазин инициализирован.');
+console.log('Игра запущена! Магазин и крафт инициализированы.');

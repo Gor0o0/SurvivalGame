@@ -9,12 +9,14 @@ const GameState = {
     currentHeroId: null,
     lastPassiveUpdate: Date.now(),
     inventory: {
-        wood: 0,
-        metal: 0,
-        cloth: 0
+        // +++ НОВОЕ: переименовываем для крафта (было wood, metal, cloth)
+        material_wood: 5,
+        material_iron: 2,
+        material_cloth: 3
     },
-    // +++ НОВОЕ: магазин (пока null, будет инициализирован позже)
     shop: null,
+    // +++ НОВОЕ: менеджер рецептов
+    recipeManager: null,
     
     _listeners: [],
     // ... остальные методы
@@ -30,7 +32,17 @@ const GameState = {
             this.notify();
         }
     },
-
+        /**
+     * Получить все материалы для отображения в удобном формате
+     * @returns {Object} - Объект с материалами
+     */
+    getMaterials() {
+        return {
+            wood: this.inventory.material_wood || 0,
+            iron: this.inventory.material_iron || 0,
+            cloth: this.inventory.material_cloth || 0
+        };
+    },
     /**
      * Выбирает героя для боя
      * @param {string} heroId - ID героя
@@ -63,6 +75,69 @@ const GameState = {
     initShop() {
         this.shop = new window.Shop();
         this.notify();
+    },
+        /**
+     * Инициализация рецептов
+     */
+    initRecipes() {
+        this.recipeManager = new window.RecipeManager();
+        this.notify();
+    },
+        /**
+     * Крафт предмета
+     * @param {string} recipeId - ID рецепта
+     * @param {string} heroId - ID героя
+     * @returns {Object} - Результат крафта
+     */
+    craftItem(recipeId, heroId) {
+        if (!this.recipeManager) {
+            return { success: false, message: 'Система крафта не инициализирована' };
+        }
+        
+        const hero = this.heroes.find(h => h.id === heroId);
+        if (!hero) {
+            return { success: false, message: 'Герой не найден' };
+        }
+        
+        // Крафтим предмет
+        const result = this.recipeManager.craft(recipeId, hero, this.inventory);
+        
+        if (result.success) {
+            this.notify(); // Обновляем UI
+        }
+        
+        return result;
+    },
+        /**
+     * Добавляет награды после боя (материалы и возможные рецепты)
+     * @returns {Object} - Объект с наградами
+     */
+    addBattleRewards() {
+        // Случайные материалы
+        const materials = [
+            { type: 'material_wood', amount: Math.floor(Math.random() * 3) + 1 },
+            { type: 'material_iron', amount: Math.floor(Math.random() * 2) },
+            { type: 'material_cloth', amount: Math.floor(Math.random() * 2) }
+        ];
+        
+        materials.forEach(m => {
+            if (m.amount > 0) {
+                this.updateMaterial(m.type, m.amount);
+            }
+        });
+        
+        // Шанс открыть новый рецепт (30%)
+        if (this.recipeManager && Math.random() < 0.3) {
+            const newRecipe = this.recipeManager.tryUnlockRandomRecipe();
+            if (newRecipe) {
+                return {
+                    materials: materials,
+                    newRecipe: newRecipe
+                };
+            }
+        }
+        
+        return { materials: materials };
     },
     passiveUpdate() {
         const now = Date.now();
