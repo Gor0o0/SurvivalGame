@@ -134,7 +134,8 @@ class SurvivorsArena {
         this.isRunning = false;
         window.currentArena = null;
     }
-        gameLoop(timestamp) {
+
+    gameLoop(timestamp) {
         if (!this.isRunning) return;
         
         const deltaTime = Math.min((timestamp - this.lastTimestamp) / 1000, 0.1);
@@ -234,6 +235,93 @@ class SurvivorsArena {
         } else {
             this.hero.vx = 0;
             this.hero.vy = 0;
+        }
+    }
+        draw() {
+        // Очищаем канвас
+        this.ctx.clearRect(0, 0, this.screenWidth, this.screenHeight);
+        
+        // Рисуем фон
+        this.drawBackground();
+        this.drawDecorations();
+        this.drawGrid();
+        
+        // Рисуем сущности
+        this.expGems.forEach(gem => gem.draw(this.ctx, this.cameraX, this.cameraY));
+        this.enemies.forEach(enemy => enemy.draw(this.ctx, this.cameraX, this.cameraY));
+        
+        if (this.hero) {
+            this.hero.draw(this.ctx, this.cameraX, this.cameraY);
+        }
+        
+        // Рисуем информацию
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText(`Сложность: ${this.difficulty.toFixed(1)}x`, 10, 30);
+        this.ctx.fillText(`Врагов: ${this.enemies.length}`, 10, 50);
+    }
+    
+    drawBackground() {
+        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.screenHeight);
+        gradient.addColorStop(0, '#1a4a1a');
+        gradient.addColorStop(1, '#2a5a2a');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.screenWidth, this.screenHeight);
+    }
+    
+    drawDecorations() {
+        this.decorations.forEach(dec => {
+            const screenX = dec.x - this.cameraX;
+            const screenY = dec.y - this.cameraY;
+            
+            if (screenX + dec.size < 0 || screenX - dec.size > this.screenWidth ||
+                screenY + dec.size < 0 || screenY - dec.size > this.screenHeight) {
+                return;
+            }
+            
+            if (dec.type === 0) { // Дерево
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(screenX - 5, screenY - dec.size/2, 10, dec.size);
+                this.ctx.fillStyle = '#0a8a0a';
+                this.ctx.beginPath();
+                this.ctx.arc(screenX, screenY - dec.size/2 - 10, dec.size/2, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else if (dec.type === 1) { // Камень
+                this.ctx.fillStyle = '#888';
+                this.ctx.beginPath();
+                this.ctx.ellipse(screenX, screenY, dec.size/2, dec.size/3, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else { // Куст
+                this.ctx.fillStyle = '#2a8a2a';
+                this.ctx.beginPath();
+                this.ctx.arc(screenX, screenY, dec.size/2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        });
+    }
+    
+    drawGrid() {
+        const cellSize = 80;
+        const startX = Math.floor(this.cameraX / cellSize) * cellSize;
+        const startY = Math.floor(this.cameraY / cellSize) * cellSize;
+        
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        this.ctx.lineWidth = 1;
+        
+        for (let x = startX; x < this.cameraX + this.screenWidth; x += cellSize) {
+            const screenX = x - this.cameraX;
+            this.ctx.beginPath();
+            this.ctx.moveTo(screenX, 0);
+            this.ctx.lineTo(screenX, this.screenHeight);
+            this.ctx.stroke();
+        }
+        
+        for (let y = startY; y < this.cameraY + this.screenHeight; y += cellSize) {
+            const screenY = y - this.cameraY;
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, screenY);
+            this.ctx.lineTo(this.screenWidth, screenY);
+            this.ctx.stroke();
         }
     }
     
@@ -395,6 +483,45 @@ class SurvivorsArena {
                 }
             }
         });
+    }
+        // Проверка, нужно ли показать окно выбора навыка
+    checkSkillChoice() {
+        if (!this.hero || !this.hero.heroData || this.skillChoiceShown) {
+            return;
+        }
+        
+        // Проверяем, есть ли ожидающий уровень для выбора навыка
+        const hasPending = this.hero.heroData.pendingSkillLevel > 0;
+        
+        if (hasPending) {
+            console.log(`%c🆕 ОБНАРУЖЕН НАВЫК! Уровень: ${this.hero.heroData.pendingSkillLevel}`, 'color: #4aff4a; font-size: 14px; font-weight: bold');
+            
+            // Ставим флаг, что окно уже показано (чтобы не показывать снова)
+            this.skillChoiceShown = true;
+            this.pause(); // Ставим игру на паузу
+            
+            // Получаем 3 случайных навыка, доступных герою
+            const skills = window.GameState.skillManager.getRandomSkillsForHero(
+                this.hero.heroData, 
+                this.hero.heroData.pendingSkillLevel
+            );
+            
+            console.log('Доступные навыки:', skills.map(s => s.name));
+            
+            // Показываем окно выбора через небольшую задержку
+            setTimeout(() => {
+                if (window.ui) {
+                    console.log('Показываем окно выбора навыка');
+                    window.ui.showSkillChoice(this.hero.heroData, skills);
+                } else {
+                    console.error('❌ UI не найден!');
+                    // Если что-то пошло не так, сбрасываем флаги и продолжаем
+                    this.skillChoiceShown = false;
+                    this.hero.heroData.pendingSkillLevel = 0;
+                    this.resume();
+                }
+            }, 500);
+        }
     }
     setupSkillChoiceCards(hero, modal) {
     const skillCards = document.querySelectorAll('.skill-choice-card');
