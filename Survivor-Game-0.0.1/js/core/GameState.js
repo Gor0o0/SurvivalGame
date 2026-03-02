@@ -17,6 +17,7 @@ const GameState = {
     shop: null,
     // +++ НОВОЕ: менеджер рецептов
     recipeManager: null,
+    skillManager: null,
     
     _listeners: [],
     // ... остальные методы
@@ -74,6 +75,11 @@ const GameState = {
      */
     initShop() {
         this.shop = new window.Shop();
+        this.notify();
+    },
+
+    initSkills() {
+        this.skillManager = new window.SkillManager();
         this.notify();
     },
         /**

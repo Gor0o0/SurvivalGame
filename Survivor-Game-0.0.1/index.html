@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Выживание на арене</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="arena_style.css"> <!-- НОВОЕ -->
 </head>
+
 <body>
     <div class="game-container" id="gameContainer">
         <!-- Шапка с ресурсами (будет видна всегда) -->
         <header class="game-header">
             <div class="resources">
-                <div class="resource-item" id="proviziya">🍞  <span>0</span></div>
-                <div class="resource-item" id="toplivo">⛽  <span>0</span></div>
-                <div class="resource-item" id="instrumenty">🔧  <span>0</span></div>
+                <div class="resource-item" id="proviziya">🍞 <span>0</span></div>
+                <div class="resource-item" id="toplivo">⛽ <span>0</span></div>
+                <div class="resource-item" id="instrumenty">🔧 <span>0</span></div>
             </div>
             <div class="header-right">
                 <span id="currentHeroName">Герой: Не выбран</span>
@@ -68,14 +71,56 @@
                 </div>
             </div>
         </main>
+        <!-- Экран 5: Арена (Survivors-style) -->
+        <div class="screen" id="screenArena">
+            <div class="arena-game-container">
+                <!-- Верхняя панель с информацией -->
+                <div class="arena-header">
+                    <div class="arena-stats">
+                        <div class="stat">❤️ <span id="arenaHp">100</span>/<span id="arenaMaxHp">100</span></div>
+                        <div class="stat">⚔️ <span id="arenaAttack">15</span></div>
+                        <div class="stat">⏱️ <span id="arenaTimer">0:00</span></div>
+                        <div class="stat">🎯 Ур. <span id="arenaLevel">1</span></div>
+                    </div>
 
-        <!-- Нижняя навигация -->
-        <nav class="game-nav">
-            <button class="nav-btn active" data-screen="lobby">🏠 Локации</button>
-            <button class="nav-btn" data-screen="heroes">⚔️ Герои</button>
-            <button class="nav-btn" data-screen="shop">🛒 Магазин</button>
-            <button class="nav-btn" data-screen="craft">🔨 Крафт</button>
-        </nav>
+                    <!-- Добавляем прогресс-бар опыта -->
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="expProgressBar" style="width: 0%"></div>
+                            <span class="progress-text" id="expText">0/100</span>
+                        </div>
+                    </div>
+
+                    <!-- Добавляем слоты навыков -->
+                    <div class="arena-skills" id="arenaSkills">
+                        <div class="skill-slot" id="skillSlot1"></div>
+                        <div class="skill-slot" id="skillSlot2"></div>
+                        <div class="skill-slot" id="skillSlot3"></div>
+                        <div class="skill-slot" id="skillSlot4"></div>
+                        <div class="skill-slot" id="skillSlot5"></div>
+                    </div>
+
+                    <button class="pause-btn" id="pauseBtn">⏸️</button>
+                </div>
+
+                <!-- Canvas для игры -->
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+                <!-- Джойстик для мобильных устройств -->
+                <div class="joystick-container" id="joystickContainer">
+                    <div class="joystick-base">
+                        <div class="joystick-thumb" id="joystickThumb"></div>
+                    </div>
+                </div>
+
+                <!-- Пауза/меню выхода -->
+                <div class="pause-menu" id="pauseMenu" style="display: none;">
+                    <h3>Пауза</h3>
+                    <button class="resume-btn" id="resumeBtn">Продолжить</button>
+                    <button class="exit-arena-btn" id="exitArenaBtn">Выйти с арены</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Модальное окно (для инвентаря/экипировки позже) -->
@@ -86,19 +131,23 @@
         </div>
     </div>
 
-    <!-- Ссылки на скрипты -->
-    <script src="js/core/GameState.js"></script> 
-    <script src="js/core/Item.js"></script>      <!-- НОВОЕ: сначала Item (базовый класс) -->
-    <script src="js/core/Hero.js"></script>
-    <script src="js/core/Shop.js"></script>      <!-- НОВОЕ: потом Shop (использует Item) -->
-    <script src="js/ui/UIManager.js"></script> 
-    <script src="js/game.js"></script>
-    <script src="js/core/GameState.js"></script> 
-    <script src="js/core/Item.js"></script>
+    <!-- Core классы -->
+    <script src="js/core/GameState.js"></script>
+    <script src="js/core/Items.js"></script>  
     <script src="js/core/Hero.js"></script>
     <script src="js/core/Shop.js"></script>
-    <script src="js/core/Recipe.js"></script>   <!-- НОВОЕ: система крафта -->
-    <script src="js/ui/UIManager.js"></script> 
+    <script src="js/core/Recipe.js"></script>
+    <script src="js/core/Skill.js"></script>
+
+    <!-- Классы арены - ВАЖНО: GameEntity.js должен быть ПЕРВЫМ среди арены -->
+    <script src="js/arena/GameEntity.js"></script> <!-- Сначала GameEntity (определяет ArenaHero) -->
+    <script src="js/arena/SpriteManager.js"></script>
+    <script src="js/arena/SurvivorsArena.js"></script> <!-- Потом SurvivorsArena (использует ArenaHero) -->
+    <script src="js/arena/ArenaController.js"></script>
+
+    <!-- UI -->
+    <script src="js/ui/UIManager.js"></script>
     <script src="js/game.js"></script>
 </body>
+
 </html>
