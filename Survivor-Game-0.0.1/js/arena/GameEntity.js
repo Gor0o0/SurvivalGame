@@ -1,26 +1,41 @@
 // Базовый класс для всех сущностей на арене
-class ArenaEntity {
-    constructor(worldX, worldY, radius, color = '#ffffff') {
-        this.worldX = worldX;          // Координаты в мире
-        this.worldY = worldY;
-        this.radius = radius || 20;     // Радиус для коллизий
-        this.vx = 0;                    // Скорость по X
-        this.vy = 0;                    // Скорость по Y
-        this.speed = 0;                  // Базовая скорость
-        this.color = color;
-        this.isActive = true;
+// В js/arena/GameEntity.js - обновленный конструктор ArenaEnemy
 
-        // Для анимации
-        this.animationTimer = 0;
-        this.animationFrame = 0;
-        this.hitEffect = 0;              // Эффект получения урона (0-1)
-        this.bobOffset = 0;               // Смещение для подпрыгивания
-        this.bobSpeed = 8;                 // Скорость подпрыгивания
-
-        // Спрайт менеджер
-        this.spriteManager = window.spriteManager;
+class ArenaEnemy extends ArenaEntity {
+    constructor(worldX, worldY, difficulty) {
+        super(worldX, worldY, 20);
+        
+        this.difficulty = difficulty;
+        
+        // Получаем конфигурацию врагов
+        const enemyTypes = Object.keys(window.EnemyTypeConfig);
+        const typeKey = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+        const config = window.EnemyTypeConfig[typeKey];
+        
+        this.type = typeKey;
+        this.config = config;
+        
+        // Характеристики из конфига
+        this.hp = config.baseHp * difficulty;
+        this.maxHp = this.hp;
+        this.attack = config.baseAttack * difficulty;
+        this.speed = config.speed;
+        this.expValue = config.expValue;
+        this.color = config.color;
+        this.bobSpeed = config.bobSpeed || 8;
+        this.attackInterval = config.attackInterval || 1.0;
+        this.radius = config.radius || 20;
+        
+        this.spriteKey = config.spriteKey;
+        
+        // Особые эффекты
+        this.slowed = false;
+        this.slowTimer = 0;
+        this.effects = config.effects || [];
+        
+        this.attackCooldown = 0;
     }
-
+    
     // Получить X на экране с учётом камеры
     getScreenX(cameraX) {
         return this.worldX - cameraX;
